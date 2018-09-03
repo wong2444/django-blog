@@ -1,0 +1,29 @@
+{% extends 'home_layout.html' %}
+
+
+{% block content %}
+<div class="title-list">
+
+
+    {% for row in follower_list %}
+    <div class="row-item">
+
+        <div class="tips">
+            <span> <a class="avatar left" href="#"><img src="/{{ row.avatar }}" style="width: 40px"></a></span>
+            <span><a href="/{{row.username}}/{{row.nid}}.html">{{ row.nickname }}</a></span>
+
+
+        </div>
+
+    </div>
+    <hr/>
+    {% endfor %}
+</div>
+<div class="clearfix">
+
+    <ul class="pagination">
+        {{ page_str }}
+    </ul>
+
+</div>
+{% endblock %}

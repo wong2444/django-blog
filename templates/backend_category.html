@@ -1,0 +1,176 @@
+{% extends 'backend_layout.html' %}
+{% load count %}
+{% block css %}
+
+{% endblock %}
+{% block conent %}
+<ol class="breadcrumb">
+    <li><a href="#">分类管理</a></li>
+    <li class="active">分类列表</li>
+</ol>
+<div>
+    <div class="row" style="padding: 20px 5px;">
+        <form class="form-horizontal">
+            <div class="col-xs-12">
+                <div class="form-group">
+                    <label class="col-xs-1 control-label">分类名称</label>
+
+                    <div class="col-xs-3">
+                        <input type="text" class="form-control" id="category_title" placeholder="请输入分类名称">
+                    </div>
+                    <div class="col-xs-3">
+                        <input type="button" class="btn btn-primary" value="添 加" onclick="add(this)">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div style="height: 35px;background-color: #f5f5f5;line-height: 35px;padding: 0 15px;">
+        <i class="fa fa-table" aria-hidden="true"></i>
+        标签列表
+    </div>
+
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>分类</th>
+            <th>文章个数</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in result %}
+        <tr nid="{{ row.nid }}">
+            <td>{{ row.title }}</td>
+
+            <td>{%count row article_list%}</td>
+            <td>
+                <a class="btn btn-danger btn-xs" onclick="del('{{ row.nid }}',this)">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                    删除
+                </a>
+                |
+                <a class="btn btn-primary btn-xs" onclick="edit('{{ row.nid }}',this)">
+                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                    编辑
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+
+    <div class="clearfix">
+        <ul class="pagination right" style="margin-top: 0">
+            {{ page_str }}
+        </ul>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block js %}
+<script>
+    function del(nid, that) {
+        if (confirm("確定刪除?")) {
+            $.ajax({
+                url: "del-category.html",
+                type: "post",
+                dataType: "json",
+                data: {"nid": nid},
+                success: function (arg) {
+
+                    if (arg.error) {
+                        alert("刪除分類錯誤");
+
+                    } else {
+
+                        $(that).parent().parent().remove();
+
+
+                    }
+                }
+            })
+        }
+    }
+
+    function edit(nid, that) {
+        var val = $(that).parent().prev().prev().html();
+
+        $(that).parent().prev().prev().html("<input type='text' class='form-control' value='" + val + "' /><input type='button' id='btn_edit' class='btn btn-default' value='確定'>")
+        $("#btn_edit").click(function () {
+
+            doEdit(nid, this);
+
+        });
+
+    }
+
+    function doEdit(nid, that) {
+        var val = $(that).prev().val();
+        $.ajax({
+            url: "edit-category.html",
+            type: "post",
+            dataType: "json",
+            data: {"nid": nid, "title": val},
+            success: function (arg) {
+
+                if (arg.error) {
+                    alert("編輯分類錯誤");
+
+                } else {
+
+                    $(that).parent().html(val);
+
+
+                }
+            }
+        })
+
+    }
+
+    function add(that) {
+        var title = $(that).parent().prev().children().val();
+        $.ajax({
+            url: "add-category.html",
+            type: "post",
+            dataType: "json",
+            data: {"title": title},
+            success: function (arg) {
+
+                if (arg.error) {
+                    alert("添加分類錯誤");
+
+                } else {
+                    console.log(arg.data);
+                    var tr = $("<tr nid='" + arg.data[0].nid + "'></tr>");
+                    var td1 = $("<td>" + arg.data[0].title + "</td>");
+                    var td2 = $("<td>0</td>");
+                    var td3 = $("<td></td>");
+                    var a1 = $("<a class='btn btn-danger btn-xs'></a>");
+                    a1.click(function () {
+                        del(arg.data[0].nid, this);
+                    });
+                    var i1 = $("<i class='fa fa-times' aria-hidden='true'></i>");
+                    a1.append(i1, "删除");
+                    var a2 = $("<a class='btn btn-primary btn-xs'></a>");
+                    a2.click(function () {
+                        edit(arg.data[0].nid, this);
+                    });
+                    var i2 = $("<i class='fa fa-times' aria-hidden='true'></i>");
+                    a2.append(i2, "编辑");
+                    td3.append(a1, " | ", a2);
+                    tr.append(td1, td2, td3);
+                    $("tbody").prepend(tr);
+                    $(that).parent().prev().children().val("")
+
+
+                }
+            }
+        })
+    }
+</script>
+{% endblock %}

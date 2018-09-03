@@ -1,0 +1,383 @@
+{% extends 'home_layout.html' %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/plugins/kindeditor/themes/default/default.css"/>
+{% endblock %}
+
+
+{% block content %}
+{% load myTag%}
+<div class="art-title">
+    <a>{{ article.title }}</a>
+</div>
+<div class="art-content">
+    {{ article.articledetail.content|safe }}
+</div>
+<div class="art-recommend clearfix">
+    <div class="recommend">
+        <a href="#" class="up" id="btn_like" onclick="like('{{article.blog.user}}','{{article.nid}}',this)"
+           style="margin: 5px 10px;display: inline-block;padding: 5px 15px;border: 1px solid #dddddd;text-align: center;">
+            {% if article|like:request.session.user_info.username%}
+            <i class="fa fa-thumbs-up fa-3" aria-hidden="true" style="font-size: 25px"></i>
+            {%else%}
+            <i class="fa fa-thumbs-o-up fa-3" aria-hidden="true" style="font-size: 25px"></i>
+            {%endif%}
+            <br/>
+            <span>{{ article.up_count }}</span>
+        </a>
+        <a href="#" class="down" id="btn_dislike" onclick="dislike('{{article.blog.user}}','{{article.nid}}',this)"
+           style="margin: 5px 10px;display: inline-block;padding: 5px 15px;border: 1px solid #dddddd;text-align: center;">
+            {% if article|dislike:request.session.user_info.username%}
+            <i class="fa fa-thumbs-down fa-3" aria-hidden="true" style="font-size: 25px"></i>
+            {%else%}
+            <i class="fa fa-thumbs-o-down fa-3" aria-hidden="true" style="font-size: 25px"></i>
+            {%endif%}
+            <br/>
+            <span>{{ article.down_count }}</span>
+        </a>
+
+    </div>
+</div>
+<div class="art-tips clearfix">
+    <div class="tips">
+        <span class="ctime">{{ article.create_time }}</span>
+        <a class="author">{{ blog.user.nickname }}</a>
+        <span class="comment-count">评论({{ article.comment_count }})</span>
+        <span class="read-count">阅读({{ article.read_count }})</span>
+        <span><a
+                href="report.html?title={{article.title}}&article_id={{article.nid}}&username={{article.blog.user.username}}">舉報</a> </span>
+    </div>
+</div>
+<div id="AllanboltSignature">
+    <div style="border-bottom: #e0e0e0 1px dashed; border-left: #e0e0e0 1px dashed; padding: 10px; font-family: 微软雅黑; font-size: 11px; border-top: #e0e0e0 1px dashed; border-right: #e0e0e0 1px dashed; "
+         id="PSignature">
+        <div style="float:left;width:70px;">
+            <img src="/static/imgs/o_Warning.png" style="width:65px;height:65px">
+        </div>
+        <div style="float:left;padding-top:10px;">
+
+            <div style="padding: 1px">作者：<a href="#">{{ blog.user.nickname }}</a></div>
+            <div style="padding: 1px">出处：<a href="#">http://www.cnblogs.com/{{ blog.site }}.html/</a>
+            </div>
+            <div style="padding: 1px">本文版权归作者所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接</div>
+        </div>
+        <div style="clear:both;"></div>
+    </div>
+</div>
+<div class="art-comment">
+    <div class="comment-area">
+        <div class="replay-comment-user"></div>
+        <div class="reply-area" style="position: relative;">
+            {% if not request.session.user_info %}
+            <div style="text-align:center;line-height:200px;position: absolute;top:0;left:0;right:0;bottom: 0;background-color: rgba(255,255,255,.6)">
+                您需要登录后才可以回帖 <a href="/login.html">登录</a> | <a href="/register.html">立即注册</a>
+            </div>
+            {% endif %}
+            <textarea name="content" id="content" style="width: 100%;height:200px;visibility:hidden;"></textarea>
+        </div>
+        <div>
+            <div class="reply-btn">
+
+                <a class="btn btn-primary" id="btn_reply"
+                   onclick="reply('{{article.nid}}','{{request.session.user_info.nid}}','','',this)">发表回复</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="comment-title">
+        评论列表
+    </div>
+    <div class="comment-list">
+        {% for comment in comment_list %}
+        <div class="comment-item">
+            <div class="reply-title clearfix">
+                <div class="user-info">
+                    <span>{{ comment.user.nickname }}</span>
+                    <span>{{ comment.create_time }}</span>
+                </div>
+                <div class="reply">
+                    <span
+                            onclick="reply_comment('{{article.nid}}','{{request.session.user_info.nid}}','{{comment.nid}}','{{comment.user.nickname}}',this)">[回复]</span>
+                </div>
+            </div>
+            <div class="reply-body">
+
+                <!--{% if comment.reply %}-->
+                <!--<div class="reply-user">@{{ comment.reply.user.nickname }}</div>-->
+
+                <!--{% endif %}-->
+                <div class="content">
+                    {{ comment.content }}<br/>
+                    {%if comment.back.all.count > 0%}
+                    <span onclick="get_reply('{{comment.nid}}',this)"><span>[查看</span>回覆]</span>
+                    {%endif%}
+                    <!--{%for item in comment.back.all%}-->
+                    <!--<div class="reply-user">&nbsp;&nbsp;&nbsp;&nbsp;{{item.user.nickname}} {{ comment.create_time }}-->
+                    <!--</div>-->
+                    <!--<div class="content">&nbsp;&nbsp;&nbsp;&nbsp;{{item.content}}-->
+                    <!--<a href="#"-->
+                    <!--onclick="reply_comment('{{article.nid}}','{{request.session.user_info.nid}}','{{comment.nid}}','{{comment.user.nickname}}',this)">回复</a>-->
+                    <!--</div>-->
+
+                    <!--{%endfor%}-->
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+</div>
+{% endblock %}
+
+
+{% block js %}
+<script src="/static/js/like.js"></script>
+<script charset="utf-8" src="/static/plugins/kindeditor/kindeditor-min.js"></script>
+<script charset="utf-8" src="/static/plugins/kindeditor/lang/zh_CN.js"></script>
+<script>
+    var editor;
+    KindEditor.ready(function (K) {
+        editor = K.create('textarea[name="content"]', {
+            resizeType: 1,
+            allowPreviewEmoticons: false,
+            allowImageUpload: false,
+            items: [
+                'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold', 'italic', 'underline',
+                'removeformat', '|', 'justifyleft', 'justifycenter', 'justifyright', 'insertorderedlist',
+                'insertunorderedlist', '|', 'emoticons', 'image', 'link']
+        });
+    });
+    $(function () {
+        var obj = new ScrollComment();
+        obj.scrollEvent();
+    });
+
+    function reply(article, user, comment, content1, that) {
+        var content = "";
+        if (content1 == "") {
+            content = editor.html();
+        } else {
+            content = content1;
+        }
+        $.ajax({
+            url: "reply.html",
+            type: "post",
+            dataType: "json",
+            data: {"article": article, "user": user, "content": content, "comment": comment},
+            success: function (arg) {
+                // console.log(arg);
+                // $("#tb1").append(arg);
+                if (arg.error) {
+                    alert(arg.data);
+
+                } else {
+
+                    if (arg.info.comment_reply == false) {
+                        var div1 = $("<div class='comment-item'></div>");
+                        var div2 = $("<div class='reply-title clearfix'></div>");
+                        var div3 = $("<div class='user-info'></div>");
+                        var span1 = $("<span>" + arg.info.username + "</span>");
+                        var span2 = $("<span>" + " 1秒前" + "</span>");
+                        var div4 = $("<div class='reply'></div>");
+                        var a = $("<span>[回复]</span>");
+                        a.click(function () {
+
+                            reply_comment('{{article.nid}}', '{{request.session.user_info.nid}}', arg.info.comment_id, arg.info.username, this);
+
+                        });
+
+                        var div5 = $("<div class='reply-body'></div>");
+
+                        var div7 = $("<div class='content'>" + arg.info.content + "</div>");
+                        div3.append(span1, span2);
+                        div2.append(div3);
+                        div4.append(a);
+                        div2.append(div4);
+                        div5.append(div7);
+                        div1.append(div2, div5);
+                        $(".comment-list").prepend(div1)
+                    } else {
+                        var div1 = $("<div class=\"reply-user\">&nbsp;&nbsp;&nbsp;&nbsp;" + arg.info.username + " 1秒前</div>");
+                        var div2 = $("<div class=\"content\">&nbsp;&nbsp;&nbsp;&nbsp;" + arg.info.content + "</div>");
+                        var a = $("  <span> [回复]</span>");
+                        a.click(function () {
+                            reply_comment('{{article.nid}}', '{{request.session.user_info.nid}}', arg.info.comment_id, arg.info.username, this);
+                        });
+                        div2.append(a);
+                        $(that).parent().parent().append(div1, div2);
+
+                    }
+
+
+                }
+
+            }
+        })
+    }
+
+    function reply_comment(article_id, user_id, comment_id, nickname, that) {
+        $("#content1").remove();
+        $("#div_btn").remove();
+        var content2 = $(that).parent().parent().next().children().filter(".content");
+
+        if (content2.length == 0) {
+            content2 = $(that).parent().parent();
+        }
+        var textarea = $("<textarea name=\"content\" id=\"content1\" style=\"width: 50%;height:100px;\"></textarea>");
+
+        var btn = $('<div id="div_btn"><a class="btn btn-primary" id="btn_reply">发表回复</a></div>');
+        textarea.val("@ " + nickname + ": ");
+        btn.click(function () {
+            var content = $("#content1").val();
+
+            reply(article_id, user_id, comment_id, content, btn);
+            $("#content1").hide();
+            $("#div_btn").hide();
+        });
+        content2.append(textarea, btn);
+
+
+    }
+
+    function get_reply(comment_id, that) {
+        if ($(that).parent().children().filter(".reply-item").length > 0) {
+            if ($(that).parent().children().filter(".reply-item").is(":hidden")) {
+                $(that).children().filter("span").text(" [隱藏");
+                $(that).parent().children().filter(".reply-item").show();
+            } else {
+                $(that).children().filter("span").text(" [查看");
+                $(that).parent().children().filter(".reply-item").hide();
+
+            }
+
+        } else {
+            $.ajax({
+                url: "get_reply.html",
+                type: "post",
+                dataType: "json",
+                data: {"comment": comment_id},
+                success: function (arg) {
+
+                    if (arg.error) {
+                        alert("拿不到回覆");
+
+                    } else {
+
+                        var div1 = $("<div class='reply-item'></div>");
+                        console.log(arg.data[0]);
+                        var j = 0;
+                        for (var i = 0; i < arg.data.length; i++) {
+                            j = i;
+                            var div2 = $("<div class='reply-user'></div>");
+                            div2.html("&nbsp;&nbsp;&nbsp;&nbsp;" + arg.data[i].user__nickname + " " + arg.data[i].create_time);
+
+                            var div3 = $("<div class='reply-content'></div>");
+                            div3.html("&nbsp;&nbsp;&nbsp;&nbsp;" + arg.data[i].content);
+                            var a = $("  <span> [回复]</span>");
+                            a.click(function () {
+                                reply_comment('{{article.nid}}', '{{request.session.user_info.nid}}', comment_id, arg.data[j].user__nickname, this);
+                            });
+                            div3.append(a);
+                            div1.append(div2, div3);
+                            $(that).parent().append(div1);
+                            $(that).children().filter("span").text(" [隱藏");
+                        }
+
+
+                    }
+                }
+            })
+        }
+
+    }
+
+    function ScrollComment() {
+        this.nid = 0;
+        this.times = Math.ceil(parseInt('{{data_count}}') / 10);
+
+        this.currentTimes = 0;
+        this.lastPostion = 3;
+        this.article_id = '{{article.nid}}';
+
+        this.get_more_comment = function () {
+
+            var that = this;
+
+            that.currentTimes += 1;
+            if (that.currentTimes >= that.times) {
+                return
+            }
+            //success方法不是對象調用的,所以success方法不知道this是誰
+            $.ajax({
+                url: 'get_more_comment.html',
+                type: 'POST',
+                dataType: 'JSON',
+                data: {"num": that.currentTimes, "article_id": that.article_id},
+                success: function (arg) {
+                    var j = 0;
+                    var loading = $("<span>加載中</span>");
+                    $(".comment-list").append(loading);
+                    for (var i = 0; i < arg.data.length; i++) {
+                        j = i;
+                        var div1 = $("<div class='comment-item'></div>");
+                        var div2 = $("<div class='reply-title clearfix'></div>");
+                        var div3 = $("<div class='user-info'></div>");
+                        var span1 = $("<span>" + arg.data[i].user__nickname + " </span>");
+                        var span2 = $("<span>" + arg.data[i].create_time + "</span>");
+                        var div4 = $("<div class='reply'></div>");
+                        var a = $("<span>[回复]</span>");
+                        a.click(function () {
+
+                            reply_comment('{{article.nid}}', '{{request.session.user_info.nid}}', arg.data[j].nid, arg.data[j].user__nickname, this);
+
+                        });
+
+                        var div5 = $("<div class='reply-body'></div>");
+
+                        var div7 = $("<div class='content'>" + arg.data[i].content + "</div>");
+                        // div7.append("<a href=\"#\" onclick=\"get_reply(arg.data[i].nid,this)\"><span>查看</span>{{comment.back.all.count}}個回覆</a>");
+                        if (arg.data[i].count > 0) {
+                            var a1 = $("<span><span> [查看</span>回覆]</span>");
+                            a1.click(function () {
+
+                                get_reply(arg.data[j].nid, this);
+
+                            });
+                            div7.append(a1);
+                        }
+
+
+                        div3.append(span1, span2);
+                        div2.append(div3);
+                        div4.append(a);
+                        div2.append(div4);
+                        div5.append(div7);
+                        div1.append(div2, div5);
+                        $(".comment-list").append(div1)
+                    }
+                    loading.remove();
+                }
+            })
+        };
+        this.scrollEvent = function () {
+            //this=obj
+            var that = this;
+            $(window).scroll(function () {
+                //每當滾輪滾動時執行
+                //文檔高度(body的高度)
+                var docHeight = $(document).height();
+                //窗口高度
+                var winHeight = $(window).height();
+                //滾輪高度
+                var scrollTop = $(window).scrollTop();
+                //滾輪可滑動高度+窗口高度=文檔高度
+                if (winHeight + scrollTop == docHeight) {
+                    that.get_more_comment();
+                }
+
+            })
+        }
+    }
+</script>
+{% endblock %}
